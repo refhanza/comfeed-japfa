@@ -4,41 +4,74 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
-class UserSeeder extends Seeder
+class RoleSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Create admin user
-        User::create([
-            'name' => 'Administrator',
-            'username' => 'admin',
-            'email' => 'admin@comfeed.com',
-            'password' => Hash::make('password123'),
-            'email_verified_at' => now(),
-        ]);
+        // Create Admin User
+        User::updateOrCreate(
+            ['email' => 'admin@comfeed-japfa.com'],
+            [
+                'name' => 'Super Administrator',
+                'email' => 'admin@comfeed-japfa.com',
+                'password' => Hash::make('admin123'),
+                'role' => User::ROLE_ADMIN,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Create staff user
-        User::create([
-            'name' => 'Staff Inventory',
-            'username' => 'staff',
-            'email' => 'staff@comfeed.com',
-            'password' => Hash::make('password123'),
-            'email_verified_at' => now(),
-        ]);
+        // Create Manager User
+        User::updateOrCreate(
+            ['email' => 'manager@comfeed-japfa.com'],
+            [
+                'name' => 'System Manager',
+                'email' => 'manager@comfeed-japfa.com',
+                'password' => Hash::make('manager123'),
+                'role' => User::ROLE_MANAGER,
+                'email_verified_at' => now(),
+            ]
+        );
 
-        // Create demo user
-        User::create([
-            'name' => 'Demo User',
-            'username' => 'demo',
-            'email' => 'demo@comfeed.com',
-            'password' => Hash::make('demo123'),
-            'email_verified_at' => now(),
-        ]);
+        // Create Staff User
+        User::updateOrCreate(
+            ['email' => 'staff@comfeed-japfa.com'],
+            [
+                'name' => 'Inventory Staff',
+                'email' => 'staff@comfeed-japfa.com',
+                'password' => Hash::make('staff123'),
+                'role' => User::ROLE_STAFF,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Create Regular User
+        User::updateOrCreate(
+            ['email' => 'user@comfeed-japfa.com'],
+            [
+                'name' => 'Regular User',
+                'email' => 'user@comfeed-japfa.com',
+                'password' => Hash::make('user123'),
+                'role' => User::ROLE_USER,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Update existing user if exists
+        $existingUser = User::where('email', 'luciusloyd1@gmail.com')->first();
+        if ($existingUser && !$existingUser->role) {
+            $existingUser->update(['role' => User::ROLE_ADMIN]);
+        }
+
+        $this->command->info('✅ Default users with roles created successfully!');
+        $this->command->info('📧 Admin: admin@comfeed-japfa.com / admin123');
+        $this->command->info('👔 Manager: manager@comfeed-japfa.com / manager123');
+        $this->command->info('👨‍💼 Staff: staff@comfeed-japfa.com / staff123');
+        $this->command->info('👤 User: user@comfeed-japfa.com / user123');
     }
 }

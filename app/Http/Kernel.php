@@ -63,5 +63,13 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
+        
+        // ============================================
+        // 🛡️ ROLE-BASED MIDDLEWARE (TAMBAHAN BARU)
+        // ============================================
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'management' => \App\Http\Middleware\ManagementMiddleware::class,
+        'admin.or.manager' => \App\Http\Middleware\AdminOrManagerMiddleware::class,
     ];
 }
