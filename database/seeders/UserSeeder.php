@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-class RoleSeeder extends Seeder
+class UserSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -61,12 +61,6 @@ class RoleSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-
-        // Update existing user if exists
-        $existingUser = User::where('email', 'luciusloyd1@gmail.com')->first();
-        if ($existingUser && !$existingUser->role) {
-            $existingUser->update(['role' => User::ROLE_ADMIN]);
-        }
 
         $this->command->info('✅ Default users with roles created successfully!');
         $this->command->info('📧 Admin: admin@comfeed-japfa.com / admin123');

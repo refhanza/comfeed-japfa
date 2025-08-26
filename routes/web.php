@@ -8,8 +8,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\PasswordResetOtpController;
 use Illuminate\Support\Facades\Route;
 
-// ... existing public and guest routes ...
-
 // ============ AUTHENTICATED ROUTES WITH ROLE PROTECTION ============
 Route::middleware('auth')->group(function () {
     
@@ -30,53 +28,61 @@ Route::middleware('auth')->group(function () {
         Route::get('/export', [DashboardController::class, 'exportData'])->name('export');
     });
     
-    // ============ BARANG ROUTES (Role-based access) ============
-    Route::middleware('management')->group(function () {
-        // Management can manage inventory
-        Route::resource('barang', BarangController::class);
-        Route::patch('/barang/{barang}/toggle-status', [BarangController::class, 'toggleStatus'])->name('barang.toggle-status');
+    // ============ FIXED: BARANG ROUTES (Clear Separation) ============
+    
+    // MANAGEMENT ACCESS (Admin, Manager, Staff) - FULL CRUD
+    Route::middleware('role:admin,manager,staff')->prefix('barang')->name('barang.')->group(function () {
+        Route::get('/', [BarangController::class, 'index'])->name('index');
+        Route::get('/create', [BarangController::class, 'create'])->name('create');
+        Route::post('/', [BarangController::class, 'store'])->name('store');
+        Route::get('/{barang}', [BarangController::class, 'show'])->name('show');
+        Route::get('/{barang}/edit', [BarangController::class, 'edit'])->name('edit');
+        Route::put('/{barang}', [BarangController::class, 'update'])->name('update');
+        Route::delete('/{barang}', [BarangController::class, 'destroy'])->name('destroy');
+        Route::patch('/{barang}/toggle-status', [BarangController::class, 'toggleStatus'])->name('toggle-status');
     });
     
-    // Read-only access for regular users
-    Route::middleware('role:user')->group(function () {
-        Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
-        Route::get('/barang/{barang}', [BarangController::class, 'show'])->name('barang.show');
+    // USER READ-ONLY ACCESS (Only if not management role)
+    Route::middleware('role:user')->prefix('barang-view')->name('barang-view.')->group(function () {
+        Route::get('/', [BarangController::class, 'index'])->name('index');
+        Route::get('/{barang}', [BarangController::class, 'show'])->name('show');
     });
     
-    // ============ TRANSAKSI ROUTES (Role-based access) ============
-    Route::prefix('transaksi')->name('transaksi.')->group(function () {
+    // ============ TRANSAKSI ROUTES (CORRECT ORDER) ============
+    
+    // ✅ SPECIFIC ROUTES FIRST
+    Route::get('/transaksi/laporan', [TransaksiController::class, 'laporan'])->name('transaksi.laporan');
+    
+    // ============ MANAGEMENT ACCESS ROUTES (Admin, Manager, Staff) ============
+    Route::middleware('role:admin,manager,staff')->group(function () {
         
-        // All authenticated users can view transactions (filtered by role in controller)
-        Route::get('/', [TransaksiController::class, 'index'])->name('index');
-        Route::get('/{transaksi}', [TransaksiController::class, 'show'])->name('show');
-        Route::get('/laporan', [TransaksiController::class, 'laporan'])->name('laporan');
+        // ============ BARANG MASUK ROUTES ============
+        Route::get('/transaksi/barang-masuk', [TransaksiController::class, 'barangMasuk'])->name('transaksi.barang-masuk');
+        Route::get('/transaksi/barang-masuk/create', [TransaksiController::class, 'createBarangMasuk'])->name('transaksi.create-barang-masuk');
+        Route::post('/transaksi/barang-masuk/store', [TransaksiController::class, 'storeBarangMasuk'])->name('transaksi.store-barang-masuk');
         
-        // Management and staff can process transactions
-        Route::middleware('role:admin,manager,staff')->group(function () {
-            // Barang Masuk routes
-            Route::get('/barang-masuk', [TransaksiController::class, 'barangMasuk'])->name('barang-masuk');
-            Route::get('/create-barang-masuk', [TransaksiController::class, 'createBarangMasuk'])->name('create-barang-masuk');
-            Route::post('/store-barang-masuk', [TransaksiController::class, 'storeBarangMasuk'])->name('store-barang-masuk');
-            
-            // Barang Keluar routes
-            Route::get('/barang-keluar', [TransaksiController::class, 'barangKeluar'])->name('barang-keluar');
-            Route::get('/create-barang-keluar', [TransaksiController::class, 'createBarangKeluar'])->name('create-barang-keluar');
-            Route::post('/store-barang-keluar', [TransaksiController::class, 'storeBarangKeluar'])->name('store-barang-keluar');
-            
-            // Export routes for barang keluar
-            Route::get('/barang-keluar/export/pdf', [TransaksiController::class, 'barangKeluar'])->name('barang-keluar.export.pdf');
-            
-            // Transaction CRUD
-            Route::get('/create', [TransaksiController::class, 'create'])->name('create');
-            Route::post('/', [TransaksiController::class, 'store'])->name('store');
-        });
+        // ============ BARANG KELUAR ROUTES ============
+        Route::get('/transaksi/barang-keluar', [TransaksiController::class, 'barangKeluar'])->name('transaksi.barang-keluar');
+        Route::get('/transaksi/barang-keluar/create', [TransaksiController::class, 'createBarangKeluar'])->name('transaksi.create-barang-keluar');
+        Route::post('/transaksi/barang-keluar/store', [TransaksiController::class, 'storeBarangKeluar'])->name('transaksi.store-barang-keluar');
         
-        // Only management can edit/delete transactions
-        Route::middleware('admin.or.manager')->group(function () {
-            Route::get('/{transaksi}/edit', [TransaksiController::class, 'edit'])->name('edit');
-            Route::put('/{transaksi}', [TransaksiController::class, 'update'])->name('update');
-            Route::delete('/{transaksi}', [TransaksiController::class, 'destroy'])->name('destroy');
-        });
+        // Export PDF for barang keluar
+        Route::get('/transaksi/barang-keluar/export/pdf', [TransaksiController::class, 'barangKeluar'])->name('transaksi.barang-keluar.export.pdf');
+        
+        // ============ GENERAL TRANSACTION ROUTES ============
+        Route::get('/transaksi/create', [TransaksiController::class, 'create'])->name('transaksi.create');
+        Route::post('/transaksi/store', [TransaksiController::class, 'store'])->name('transaksi.store');
+    });
+    
+    // ✅ GENERAL/PARAMETERIZED ROUTES LAST
+    Route::get('/transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+    Route::get('/transaksi/{transaksi}', [TransaksiController::class, 'show'])->name('transaksi.show');
+    
+    // ============ ADMIN + MANAGER ONLY ROUTES ============
+    Route::middleware('role:admin,manager')->group(function () {
+        Route::get('/transaksi/{transaksi}/edit', [TransaksiController::class, 'edit'])->name('transaksi.edit');
+        Route::put('/transaksi/{transaksi}', [TransaksiController::class, 'update'])->name('transaksi.update');
+        Route::delete('/transaksi/{transaksi}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
     });
     
     // ============ API ROUTES (All authenticated users) ============
@@ -85,7 +91,7 @@ Route::middleware('auth')->group(function () {
     });
     
     // ============ USER MANAGEMENT ROUTES (Admin and Manager only) ============
-    Route::middleware('admin.or.manager')->prefix('users')->name('users.')->group(function () {
+    Route::middleware('role:admin,manager')->prefix('users')->name('users.')->group(function () {
         // Basic CRUD (Admin and Manager)
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/create', [UserController::class, 'create'])->name('create');
@@ -98,7 +104,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/{user}/reset-password', [UserController::class, 'resetPassword'])->name('reset-password');
         
         // Admin-only routes
-        Route::middleware('admin')->group(function () {
+        Route::middleware('role:admin')->group(function () {
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
             Route::post('/{user}/update-role', [UserController::class, 'updateRole'])->name('update-role');
         });
@@ -106,7 +112,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // ============ ADMIN ROUTES (Admin only) ============
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // System configuration
     Route::get('/settings', function() {
         return view('admin.settings');

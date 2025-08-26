@@ -4,24 +4,24 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class ManagementMiddleware
 {
     /**
      * Handle an incoming request.
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check() || !auth()->user()->hasManagementAccess()) {
-            \Log::warning('Management access denied', [
-                'user_id' => auth()->id(),
-                'user_role' => auth()->user()->role ?? 'guest',
-                'url' => $request->url(),
-                'ip' => $request->ip(),
-            ]);
+        if (!Auth::check()) {
+            return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
+        }
 
-            return redirect()->route('dashboard')->with('error', 'Akses management diperlukan.');
+        $user = Auth::user();
+        $allowedRoles = ['admin', 'manager', 'staff'];
+
+        if (!in_array($user->role, $allowedRoles)) {
+            abort(403, 'Anda tidak memiliki akses untuk halaman ini. Diperlukan role: ' . implode(', ', $allowedRoles));
         }
 
         return $next($request);

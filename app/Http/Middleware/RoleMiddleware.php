@@ -4,36 +4,29 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
+     * @param  string  $roles
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next, ...$roles): Response
+    public function handle(Request $request, Closure $next, $roles)
     {
-        // Check if user is authenticated
-        if (!auth()->check()) {
+        if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
-        $user = auth()->user();
+        $user = Auth::user();
+        $allowedRoles = explode(',', $roles);
 
-        // Check if user has required role
-        if (!$user->hasAnyRole($roles)) {
-            // Log unauthorized access attempt
-            \Log::warning('Unauthorized access attempt', [
-                'user_id' => $user->id,
-                'user_role' => $user->role,
-                'required_roles' => $roles,
-                'url' => $request->url(),
-                'ip' => $request->ip(),
-            ]);
-
-            return redirect()->route('dashboard')->with('error', 'Anda tidak memiliki akses untuk halaman ini.');
+        if (!in_array($user->role, $allowedRoles)) {
+            abort(403, 'Anda tidak memiliki akses untuk halaman ini.');
         }
 
         return $next($request);

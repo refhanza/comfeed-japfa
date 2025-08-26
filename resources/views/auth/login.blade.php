@@ -107,71 +107,19 @@
             </div>
         </button>
     </div>
-
-    <!-- Divider -->
-    <div class="relative">
-        <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-        </div>
-        <div class="relative flex justify-center text-sm">
-            <span class="px-4 bg-white text-gray-500">Or continue with</span>
-        </div>
-    </div>
-
-    <!-- Social Login (Optional - can be implemented later) -->
-    <div class="grid grid-cols-1 gap-3">
-        <button type="button" 
-                onclick="showNotification('Social login coming soon!', 'info')"
-                class="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
-            <i class="fab fa-google text-red-500 mr-2"></i>
-            Continue with Google
-        </button>
-    </div>
 </form>
 @endsection
 
 @section('footer')
-<div class="text-center space-y-4">
-    <!-- Password Reset Options -->
-    <div class="space-y-3">
-        <p class="text-sm text-gray-600">Lupa password? Pilih metode reset:</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {{-- Traditional Email Reset --}}
-            @if (Route::has('password.request'))
-            <a href="{{ route('password.request') }}" 
-               class="group inline-flex items-center justify-center px-4 py-2 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 transition-all duration-200">
-                <i class="fas fa-envelope mr-2 group-hover:scale-110 transition-transform duration-200"></i>
-                <div class="text-left">
-                    <div class="font-semibold">Email Link</div>
-                    <div class="text-xs text-blue-600">Traditional reset</div>
-                </div>
-            </a>
-            @endif
-            
-            {{-- OTP Reset --}}
-            @if (Route::has('password.otp.request'))
-            <a href="{{ route('password.otp.request') }}" 
-               class="group inline-flex items-center justify-center px-4 py-2 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 transition-all duration-200">
-                <i class="fas fa-mobile-alt mr-2 group-hover:scale-110 transition-transform duration-200"></i>
-                <div class="text-left">
-                    <div class="font-semibold">OTP Code</div>
-                    <div class="text-xs text-purple-600">Fast & secure</div>
-                </div>
-            </a>
-            @endif
-        </div>
-    </div>
-    
-    <!-- Register Link -->
-    <div class="pt-4 border-t border-gray-200">
-        <p class="text-sm text-gray-600">
-            Don't have an account?
-            <a href="{{ route('register') }}" 
-               class="font-medium text-green-600 hover:text-green-800 transition-colors duration-200 ml-1">
-                <i class="fas fa-user-plus mr-1"></i>Sign up here
-            </a>
-        </p>
-    </div>
+<div class="text-center">
+    <!-- Register Link Only -->
+    <p class="text-sm text-gray-600">
+        Don't have an account?
+        <a href="{{ route('register') }}" 
+           class="font-medium text-green-600 hover:text-green-800 transition-colors duration-200 ml-1">
+            <i class="fas fa-user-plus mr-1"></i>Sign up here
+        </a>
+    </p>
 </div>
 @endsection
 
@@ -262,21 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
-    }
-
-    // Auto-fill demo credentials (for development only)
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        const demoBtn = document.createElement('button');
-        demoBtn.type = 'button';
-        demoBtn.className = 'mt-4 w-full text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200';
-        demoBtn.innerHTML = '<i class="fas fa-fill-drip mr-1"></i>Fill Demo Credentials';
-        demoBtn.onclick = function() {
-            document.getElementById('email').value = 'admin@comfeed.com';
-            document.getElementById('password').value = 'password';
-            showNotification('Demo credentials filled!', 'info', 2000);
-        };
-        
-        loginForm.appendChild(demoBtn);
     }
 
     // Keyboard shortcuts

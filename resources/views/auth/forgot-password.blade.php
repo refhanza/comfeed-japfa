@@ -80,33 +80,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Alternative Options -->
-    <div class="space-y-4">
-        <div class="relative">
-            <div class="absolute inset-0 flex items-center">
-                <div class="w-full border-t border-gray-300"></div>
-            </div>
-            <div class="relative flex justify-center text-sm">
-                <span class="px-4 bg-white text-gray-500">Need help?</span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 gap-3">
-            <a href="mailto:support@comfeed.com" 
-               class="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
-                <i class="fas fa-envelope mr-2 text-gray-500"></i>
-                Contact Support
-            </a>
-            
-            <button type="button" 
-                    onclick="showSecurityTips()"
-                    class="w-full inline-flex justify-center items-center py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
-                <i class="fas fa-shield-alt mr-2 text-gray-500"></i>
-                Security Tips
-            </button>
-        </div>
-    </div>
 </form>
 @endsection
 
@@ -188,86 +161,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return emailRegex.test(email);
     }
 
-    // Security tips modal
-    window.showSecurityTips = function() {
-        const tips = `
-            <div class="text-left space-y-3">
-                <h3 class="font-semibold text-gray-900 mb-3">🔒 Password Security Tips</h3>
-                <div class="space-y-2 text-sm text-gray-700">
-                    <p><strong>Create a strong password:</strong></p>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>Use at least 8 characters</li>
-                        <li>Mix uppercase and lowercase letters</li>
-                        <li>Include numbers and special characters</li>
-                        <li>Avoid personal information</li>
-                    </ul>
-                    
-                    <p class="pt-2"><strong>Keep it secure:</strong></p>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>Don't share your password</li>
-                        <li>Use unique passwords for each account</li>
-                        <li>Enable two-factor authentication</li>
-                        <li>Log out from shared computers</li>
-                    </ul>
-                    
-                    <p class="pt-2"><strong>If you suspect compromise:</strong></p>
-                    <ul class="list-disc list-inside ml-4 space-y-1">
-                        <li>Change your password immediately</li>
-                        <li>Check recent login activity</li>
-                        <li>Contact support if needed</li>
-                    </ul>
-                </div>
-            </div>
-        `;
-        
-        showModal('Security Tips', tips);
-    };
-
-    function showModal(title, content) {
-        // Create modal backdrop
-        const backdrop = document.createElement('div');
-        backdrop.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4';
-        backdrop.onclick = function(e) {
-            if (e.target === backdrop) {
-                document.body.removeChild(backdrop);
-            }
-        };
-
-        // Create modal content
-        const modal = document.createElement('div');
-        modal.className = 'glass-card rounded-2xl shadow-2xl max-w-md w-full animate-fade-in';
-        modal.innerHTML = `
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold text-gray-900">${title}</h2>
-                    <button onclick="this.closest('.fixed').remove()" 
-                            class="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-                <div class="text-gray-700">
-                    ${content}
-                </div>
-                <div class="mt-6 text-center">
-                    <button onclick="this.closest('.fixed').remove()" 
-                            class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
-                        Got it
-                    </button>
-                </div>
-            </div>
-        `;
-
-        backdrop.appendChild(modal);
-        document.body.appendChild(backdrop);
-    }
-
     // Auto-focus on email input
     emailInput.focus();
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            // Close any open modals
+            // Close any open modals (if any)
             const modals = document.querySelectorAll('.fixed.inset-0');
             modals.forEach(modal => modal.remove());
         }
@@ -291,20 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Auto-fill demo email for development
-    if (window.location.hostname === 'localhost') {
-        const demoBtn = document.createElement('button');
-        demoBtn.type = 'button';
-        demoBtn.className = 'mt-4 w-full text-xs text-gray-500 hover:text-gray-700 transition-colors duration-200';
-        demoBtn.innerHTML = '<i class="fas fa-fill-drip mr-1"></i>Fill Demo Email';
-        demoBtn.onclick = function() {
-            emailInput.value = 'admin@comfeed.com';
-            emailInput.dispatchEvent(new Event('input'));
-            showNotification('Demo email filled!', 'info', 2000);
-        };
-        
-        resetForm.appendChild(demoBtn);
-    }
+    // Enhanced form validation
+    emailInput.addEventListener('blur', function() {
+        const email = this.value.trim();
+        if (email && !isValidEmail(email)) {
+            showNotification('Please enter a valid email address', 'error');
+        }
+    });
 });
 </script>
 @endpush

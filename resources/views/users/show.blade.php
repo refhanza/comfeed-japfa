@@ -498,3 +498,239 @@
             </form>
         </div>
     </div>
+</div>
+
+@endsection
+
+@push('scripts')
+<script>
+// Reset Password Modal Functions
+function toggleResetPassword() {
+    const modal = document.getElementById('resetPasswordModal');
+    modal.classList.toggle('hidden');
+    
+    // Clear form when closing
+    if (modal.classList.contains('hidden')) {
+        document.getElementById('new_password').value = '';
+        document.getElementById('new_password_confirmation').value = '';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('resetPasswordModal');
+    if (event.target === modal) {
+        toggleResetPassword();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('resetPasswordModal');
+        if (!modal.classList.contains('hidden')) {
+            toggleResetPassword();
+        }
+    }
+});
+
+// Enhanced animations and interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading states to buttons
+    const buttons = document.querySelectorAll('button[type="submit"], a[href*="edit"]');
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (this.tagName === 'BUTTON' && this.type === 'submit') {
+                // Add loading spinner
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+                this.disabled = true;
+                
+                // Re-enable after form submission (fallback)
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 3000);
+            }
+        });
+    });
+    
+    // Smooth scroll to sections
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+    
+    // Auto-refresh statistics every 30 seconds (optional)
+    setInterval(function() {
+        // This could be enhanced to fetch updated stats via AJAX
+        console.log('Statistics refresh interval');
+    }, 30000);
+    
+    // Enhanced hover effects
+    const cards = document.querySelectorAll('.hover-lift');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px)';
+            this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
+// Notification helper function
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const bgColor = type === 'success' ? 'border-green-500 text-green-700' : 
+                   type === 'error' ? 'border-red-500 text-red-700' : 
+                   type === 'warning' ? 'border-amber-500 text-amber-700' : 'border-blue-500 text-blue-700';
+    
+    notification.className = `fixed top-6 right-6 z-50 glass-morphism border-l-4 ${bgColor} p-4 rounded-xl max-w-sm animate-fade-in`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} mr-3 text-lg"></i>
+            <div class="flex-1">
+                <p class="text-sm font-medium">${message}</p>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-current hover:opacity-70">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            notification.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Enhanced copy to clipboard functionality for user ID
+function copyToClipboard(text, element) {
+    navigator.clipboard.writeText(text).then(function() {
+        showNotification('User ID copied to clipboard!', 'success');
+        
+        // Visual feedback
+        const originalText = element.textContent;
+        element.textContent = 'Copied!';
+        element.style.background = '#10b981';
+        element.style.color = 'white';
+        
+        setTimeout(() => {
+            element.textContent = originalText;
+            element.style.background = '';
+            element.style.color = '';
+        }, 1500);
+    }).catch(function() {
+        showNotification('Failed to copy to clipboard', 'error');
+    });
+}
+
+// Add click-to-copy for user ID
+document.addEventListener('DOMContentLoaded', function() {
+    const userIdElements = document.querySelectorAll('.font-mono');
+    userIdElements.forEach(element => {
+        if (element.textContent.includes('#')) {
+            element.style.cursor = 'pointer';
+            element.title = 'Click to copy';
+            element.addEventListener('click', function() {
+                copyToClipboard(this.textContent, this);
+            });
+        }
+    });
+});
+</script>
+
+@if($errors->any())
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show reset password modal if there are validation errors for password reset
+    @if($errors->has('new_password') || $errors->has('new_password_confirmation'))
+        toggleResetPassword();
+    @endif
+});
+</script>
+@endif
+
+<style>
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+/* Enhanced print styles for user details */
+@media print {
+    .print\\:hidden { display: none !important; }
+    .print\\:block { display: block !important; }
+    
+    /* Optimize layout for printing */
+    .lg\\:col-span-2 { grid-column: span 2; }
+    .glass-morphism { 
+        background: white !important; 
+        border: 1px solid #e5e7eb !important;
+        backdrop-filter: none !important;
+    }
+    
+    /* Hide interactive elements when printing */
+    button, .hover-lift { 
+        box-shadow: none !important;
+        transform: none !important;
+    }
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+    .lg\\:col-span-2 {
+        grid-column: span 1;
+    }
+    
+    .grid.grid-cols-1.lg\\:grid-cols-3 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .space-y-6 > * + * {
+        margin-top: 1rem;
+    }
+}
+
+/* Custom scrollbar for the page */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+</style>
+@endpush
